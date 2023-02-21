@@ -15,6 +15,8 @@
 
 #include "ramped_motor.hpp"
 
+using namespace kp;
+
 RampedMotor::RampedMotor(int port)
     : position_provider(port),
       Motor(port)
