@@ -24,6 +24,13 @@ RampedMotor::RampedMotor(int port)
     controller_thread = std::thread(&RampedMotor::controllerThreadFn, this);
 }
 
+RampedMotor::~RampedMotor()
+{
+    threxit = true;
+    if (controller_thread.joinable())
+        controller_thread.join();
+}
+
 void RampedMotor::controllerThreadFn()
 {
     while (!threxit)
@@ -36,7 +43,7 @@ void RampedMotor::controllerThreadFn()
 
         int current_pos = getPosition();
         int delta = std::abs(current_pos - goal_pos);
-        int distance_traveled = std::abs(current_pos - start_pos);
+        distance_traveled = std::abs(current_pos - start_pos);
 
         if (delta <= max_pos_goal_delta)
         {
@@ -58,10 +65,10 @@ void RampedMotor::controllerThreadFn()
             // the faster the motor is going, the longer it should take to accelerate
             const int accel_end = (speed + 500) / 20;
             if (delta < decel_start)
-                scaledSpeed = std::min(speed, speed * delta / decel_start + min_speed);
+                scaledSpeed = std::min((int)speed, speed * delta / decel_start + min_speed);
             else if (distance_traveled < accel_end)
             {
-                scaledSpeed = std::min(speed, speed * distance_traveled / accel_end + min_speed);
+                scaledSpeed = std::min((int)speed, speed * distance_traveled / accel_end + min_speed);
             }
             Motor::moveToPosition(scaledSpeed, goal_pos);
         }
@@ -78,6 +85,7 @@ void RampedMotor::moveToPosition(short _speed, int goalPos)
 {
     speed = _speed;
     goal_pos = goalPos;
+    distance_traveled = 0;
     start_pos = getPosition();
     // if we are already at the target, the control loop will
     // exit immediately
@@ -140,4 +148,10 @@ void RampedMotor::setAccuracy(int delta)
 int RampedMotor::getPosition()
 {
     return position_provider.value();
+}
+
+int RampedMotor::getPercentCompleted()
+{
+    int full_distance = std::abs(goal_pos - start_pos);
+    return full_distance > 0 ? 100 * distance_traveled / full_distance : 100;   // avoid division by 0
 }

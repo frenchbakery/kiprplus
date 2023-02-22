@@ -13,6 +13,7 @@
 #pragma once
 
 #include <thread>
+#include <atomic>
 #include <kipr/motors.hpp>
 
 namespace kp
@@ -24,20 +25,22 @@ namespace kp
         BackEMF position_provider;
 
         // start position of the current position control operation
-        int start_pos = 0;
+        std::atomic_int start_pos {0};
         // current position goal
-        int goal_pos = 0;
+        std::atomic_int goal_pos {0};
+        // the distance traveled since position control was started
+        std::atomic_int distance_traveled {0};
         // how far the actual position can be from the goal for the position controller to
         // consider the goal reached
         int max_pos_goal_delta = 0;
         // current set speed
-        int speed = 0;
+        std::atomic_int speed {0};
         // flag whether controller thread should do anything
-        bool pos_ctrl_active = false;
+        std::atomic_bool pos_ctrl_active {false};
         // flag set when the positition control target has been reached
-        bool pos_target_reached = false;
+        std::atomic_bool pos_target_reached {false};
         // exit flag for thread
-        bool threxit = false;
+        std::atomic_bool threxit {false};
 
         /**
          * @brief function that will run the positioning in the background
@@ -48,6 +51,8 @@ namespace kp
 
     public:
         RampedMotor(int port);
+
+        ~RampedMotor();
 
         /*
         None of the base classes' methods are virtual so
@@ -80,6 +85,11 @@ namespace kp
 
         // returns the current counter counter (equivalent to using the BackEMF class)
         int getPosition();
+
+        /**
+         * @return int percentage of the current goal completed
+         */
+        int getPercentCompleted();
 
     };
 
