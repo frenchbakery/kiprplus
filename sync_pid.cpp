@@ -115,4 +115,9 @@ namespace kp
     {
         setpoint = s;
     }
+
+    double SyncPID::getSetpoint() const
+    {
+        return setpoint;
+    }
 };

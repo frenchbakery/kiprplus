@@ -92,5 +92,10 @@ namespace kp
          * @param s setpoint
          */
         void setSetpoint(double s);
+
+        /**
+         * @return double current setpoint
+         */
+        double getSetpoint() const;
     };
 };
