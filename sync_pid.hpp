@@ -37,6 +37,8 @@ namespace kp
         // output limits and output
         double min_output;
         double max_output;
+        double positive_deadband;
+        double negative_deadband;
         double output;
 
     public:
@@ -50,6 +52,16 @@ namespace kp
          * @param _tau derivative filter time
          */
         SyncPID(double _k_p, double _k_i, double _k_d, double _tau, double min, double max);
+
+        /**
+         * @brief sets the output deadband value. This is the band of the output value around
+         * the zero point that is considered equivalent to zero and is therefore avoided if 
+         * position change is requested.
+         * 
+         * @param pdb deadband in the positive direction
+         * @param ndb deadband in the negative direction
+         */
+        void setOutputDeadband(double pdb, double ndb);
 
         /**
          * @brief resets the PID controller to the initial state

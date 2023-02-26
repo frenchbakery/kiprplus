@@ -15,6 +15,21 @@
 
 #include "sync_pid.hpp"
 
+/**
+ * @brief maps a number from an input range to an output range
+ * 
+ * @param x input number
+ * @param imin input range minimum
+ * @param imax input range maximum
+ * @param omin output range minimum
+ * @param omax output range maximum
+ * @return double output value
+ */
+double dmap(double x, double imin, double imax, double omin, double omax)
+{
+    return (x - imin) * (omax - omin) / (imax - imin) + omin;
+}
+
 namespace kp
 {
 
@@ -27,6 +42,12 @@ namespace kp
         : k_p(_k_p), k_i(_k_i), k_d(_k_d), tau(_tau), min_output(min), max_output(max)
     {
         reset();
+    }
+
+    void SyncPID::setOutputDeadband(double pdb, double ndb)
+    {
+        positive_deadband = pdb;
+        negative_deadband = ndb;
     }
 
     void SyncPID::reset()
@@ -71,6 +92,12 @@ namespace kp
         output = proportional + integrator + differentiator;
         output = std::min(output, max_output);
         output = std::max(output, min_output);
+
+        // compute deadband
+        if (output > 0)
+            output = dmap(output, 0, max_output, positive_deadband, max_output);
+        else if (output < 0)
+            output = dmap(output, 0, min_output, -negative_deadband, min_output);
 
         // store values for next update
         previous_error = error;
