@@ -54,27 +54,31 @@ el::retcode AggregationEngine::moveRelativePosition(int short speed, int delta_p
         std::cout << "moveRelativePosition [E]: invalid movement modifier count" << std::endl;
         return el::retcode::err;
     }
-    const int update_period = 10; // ms
+    const int update_period = 2; // ms
 
     std::vector<int> starting_positions;
-    for (auto &motor : motors)
+    std::vector<int> deltas;
+    std::cout << "Main: " << delta_pos << std::endl;
+    for (int m = 0; m < motors.size(); m++)
     {
-        starting_positions.push_back(motor->getPosition());
+        starting_positions.push_back(motors[m]->getPosition());
+        deltas.push_back(delta_pos * movement_modifiers[m]);
+        std::cout << "Motor " << m << ": " << deltas.back() << std::endl;
     }
     int ticks_per_period = (update_period * speed) / 1000;
     int periods = std::abs(delta_pos) / ticks_per_period;
     for (int i = 0; i < periods; i++)
     {
-        for (int i = 0; i < motors.size(); i++)
+        for (int m = 0; m < motors.size(); m++)
         {
-            motors[i]->setRelativeTarget(ticks_per_period * (delta_pos > 0 ? 1 : -1) * movement_modifiers[i]);
+            motors[m]->setAbsoluteTarget(starting_positions[m] + ((deltas[m] * i) / periods));
         }
         msleep(update_period);
     }
     // set final target to make sure everything is in the correct location
-    for (int i = 0; i < motors.size(); i++)
+    for (int m = 0; m < motors.size(); m++)
     {
-        motors[i]->setAbsoluteTarget(starting_positions[i] + delta_pos);
+        motors[m]->setAbsoluteTarget(starting_positions[m] + deltas[m]);
     }
 
     return el::retcode::ok;

@@ -24,7 +24,7 @@ using namespace kp;
 PIDMotor::PIDMotor(int port)
     : Motor(port),
     position_provider(port),
-    pid_provider(20, 0, 0, 0, -1500, 1500)
+    pid_provider(7, 0, 0, 0, -1500, 1500)
 {
     controller_thread = std::thread(&PIDMotor::controllerThreadFn, this);
 }
