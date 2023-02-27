@@ -23,15 +23,37 @@ using namespace kp;
 AggregationEngine::AggregationEngine(AggregationEngine::motorlist_t && m)
 : motors(m)
 {
+    for (auto &motor : motors)
+    {
+        movement_modifiers.push_back(1);
+    }
 }
 
 void AggregationEngine::addMotor(std::shared_ptr<PIDMotor> motor)
 {
     motors.push_back(motor);
+    while (movement_modifiers.size() < motors.size())
+        movement_modifiers.push_back(1);
 }
 
-void AggregationEngine::moveRelativePosition(int short speed, int delta_pos)
+el::retcode AggregationEngine::setMovementModifiers(const std::vector<double> &modifiers)
 {
+    if (modifiers.size() != motors.size())
+    {
+        std::cout << "setMovementModifiers [E]: invalid movement modifier count" << std::endl;
+        return el::retcode::err;
+    }
+    movement_modifiers = modifiers;
+    return el::retcode::ok;
+}
+
+el::retcode AggregationEngine::moveRelativePosition(int short speed, int delta_pos)
+{
+    if (movement_modifiers.size() != motors.size())
+    {
+        std::cout << "moveRelativePosition [E]: invalid movement modifier count" << std::endl;
+        return el::retcode::err;
+    }
     const int update_period = 10; // ms
 
     std::vector<int> starting_positions;
@@ -41,22 +63,19 @@ void AggregationEngine::moveRelativePosition(int short speed, int delta_pos)
     }
     int ticks_per_period = (update_period * speed) / 1000;
     int periods = std::abs(delta_pos) / ticks_per_period;
-    std::cout << ticks_per_period << ", " << periods << std::endl;
     for (int i = 0; i < periods; i++)
     {
-        for (auto &motor : motors)
+        for (int i = 0; i < motors.size(); i++)
         {
-            std::cout << "a" << ticks_per_period * (delta_pos > 0 ? 1 : -1) << "  ";
-            motor->setRelativeTarget(ticks_per_period * (delta_pos > 0 ? 1 : -1));
+            motors[i]->setRelativeTarget(ticks_per_period * (delta_pos > 0 ? 1 : -1) * movement_modifiers[i]);
         }
-        std::cout << std::endl;
         msleep(update_period);
     }
     // set final target to make sure everything is in the correct location
     for (int i = 0; i < motors.size(); i++)
     {
-        std::cout << "b" << starting_positions[i] + delta_pos << "  ";
         motors[i]->setAbsoluteTarget(starting_positions[i] + delta_pos);
     }
-    std::cout << std::endl;
+
+    return el::retcode::ok;
 }
