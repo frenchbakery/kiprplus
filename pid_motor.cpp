@@ -11,6 +11,8 @@
 
 #include <kipr/time/time.h>
 #include <cmath>
+#include <iostream>
+#include <iomanip>
 
 #include "pid_motor.hpp"
 
@@ -43,9 +45,14 @@ void PIDMotor::controllerThreadFn()
             msleep(LOOP_DELAY);
             continue;
         }
-        double output = pid_provider.update(LOOP_DELAY, getPosition());
+        int position = getPosition();
+        double output = pid_provider.update(LOOP_DELAY, position);
         //std::cout << output << std::endl;
         Motor::moveAtVelocity(output);
+        std::cout << std::this_thread::get_id() 
+            << "t=" << std::setw(6) << pid_provider.getSetpoint() 
+            << " o=" << std::setw(6) << output
+            << " p=" << std::setw(6) << position << std::endl;
         msleep(LOOP_DELAY);
     }
 }
@@ -86,7 +93,7 @@ bool PIDMotor::isMotorDone()
 {
     if (pos_ctrl_active)
         return std::abs(pid_provider.getSetpoint() - getPosition()) <= accuracy;
-    Motor::isMotorDone();
+    return Motor::isMotorDone();
 }
 void PIDMotor::blockMotorDone()
 {

@@ -14,14 +14,14 @@
 
 #include <vector>
 #include <memory>
-#include "ramped_motor.hpp"
+#include "pid_motor.hpp"
 
 namespace kp
 {
     class AggregationEngine
     {
     protected:
-        using motorlist_t = std::vector<std::shared_ptr<RampedMotor>>;
+        using motorlist_t = std::vector<std::shared_ptr<PIDMotor>>;
         motorlist_t motors;
     
     public:
@@ -39,12 +39,12 @@ namespace kp
          * 
          * @param motor shared motor to add
          */
-        void addMotor(std::shared_ptr<RampedMotor> motor);
+        void addMotor(std::shared_ptr<PIDMotor> motor);
 
         /**
          * @brief moves all motors by a relative distance 
          * 
-         * @param speed average speed to move at
+         * @param speed average speed to move at (ticks per second)
          * @param delta_pos distance to travel
          */
         void moveRelativePosition(int short speed, int delta_pos);         

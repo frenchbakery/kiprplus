@@ -10,6 +10,10 @@
  * 
  */
 
+#include <cmath>
+#include <iostream>
+#include <kipr/time/time.h>
+
 #include "aggregation_engine.hpp"
 
 using namespace kp;
@@ -21,22 +25,38 @@ AggregationEngine::AggregationEngine(AggregationEngine::motorlist_t && m)
 {
 }
 
-void AggregationEngine::addMotor(std::shared_ptr<RampedMotor> motor)
+void AggregationEngine::addMotor(std::shared_ptr<PIDMotor> motor)
 {
     motors.push_back(motor);
 }
 
 void AggregationEngine::moveRelativePosition(int short speed, int delta_pos)
 {
+    const int update_period = 10; // ms
+
     std::vector<int> starting_positions;
-    for_every_motor
+    for (auto &motor : motors)
     {
         starting_positions.push_back(motor->getPosition());
-        motor->moveRelativePosition(speed, delta_pos);
     }
-
-    for_every_motor
+    int ticks_per_period = (update_period * speed) / 1000;
+    int periods = std::abs(delta_pos) / ticks_per_period;
+    std::cout << ticks_per_period << ", " << periods << std::endl;
+    for (int i = 0; i < periods; i++)
     {
-        motor->blockMotorDone();
+        for (auto &motor : motors)
+        {
+            std::cout << "a" << ticks_per_period * (delta_pos > 0 ? 1 : -1) << "  ";
+            motor->setRelativeTarget(ticks_per_period * (delta_pos > 0 ? 1 : -1));
+        }
+        std::cout << std::endl;
+        msleep(update_period);
     }
+    // set final target to make sure everything is in the correct location
+    for (int i = 0; i < motors.size(); i++)
+    {
+        std::cout << "b" << starting_positions[i] + delta_pos << "  ";
+        motors[i]->setAbsoluteTarget(starting_positions[i] + delta_pos);
+    }
+    std::cout << std::endl;
 }
