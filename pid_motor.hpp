@@ -1,44 +1,34 @@
 /**
- * @file ramped_motor.hpp
+ * @file pid_motor.hpp
  * @author melektron
- * @brief motor driver class that adds slow-halt and ramping functionality to improve positioning accuracy
- * because the default PID controller does some weird stuff.
+ * @brief Motor with local asynchronous PID position control
  * @version 0.1
- * @date 2023-02-15
+ * @date 2023-02-26
  *
- * @copyright Copyright FrenchBakery (c) 2023
+ * @copyright Copyright (c) 2023
  *
  */
 
 #pragma once
 
-#include <thread>
 #include <atomic>
+#include <thread>
 #include <kipr/motor/motor.hpp>
+#include "sync_pid.hpp"
 
 namespace kp
 {
 
-    class RampedMotor : public kipr::motor::Motor
+    class PIDMotor : private kipr::motor::Motor
     {
     protected:
         kipr::motor::BackEMF position_provider;
+        SyncPID pid_provider;
 
-        // start position of the current position control operation
-        std::atomic_int start_pos{0};
-        // current position goal
-        std::atomic_int goal_pos{0};
-        // the distance traveled since position control was started
-        std::atomic_int distance_traveled{0};
-        // how far the actual position can be from the goal for the position controller to
-        // consider the goal reached
-        int max_pos_goal_delta = 0;
-        // current set speed
-        std::atomic_int speed{0};
+        // distance from setpoint for the target to be considered reached
+        std::atomic_int accuracy{0};
         // flag whether controller thread should do anything
         std::atomic_bool pos_ctrl_active{false};
-        // flag set when the positition control target has been reached
-        std::atomic_bool pos_target_reached{false};
         // exit flag for thread
         std::atomic_bool threxit{false};
 
@@ -50,9 +40,9 @@ namespace kp
         std::thread controller_thread;
 
     public:
-        RampedMotor(int port);
+        PIDMotor(int port);
 
-        ~RampedMotor();
+        ~PIDMotor();
 
         /*
         None of the base classes' methods are virtual so
@@ -66,8 +56,8 @@ namespace kp
         void moveToPosition(short speed, int goal_pos);
         void moveRelativePosition(short speed, int delta_pos);
         void freeze();
-        bool isMotorDone() const;
-        void blockMotorDone() const;
+        bool isMotorDone();
+        void blockMotorDone();
         void forward();
         void backward();
         void motor(int percent);
@@ -86,12 +76,37 @@ namespace kp
          */
         void setAccuracy(int delta);
 
-        // returns the current counter counter (equivalent to using the BackEMF class)
-        int getPosition();
+        /**
+         * @brief sets the position control target to a specific location
+         *
+         * @param target_pos target position in motor ticks
+         */
+        void setAbsoluteTarget(int target_pos);
 
         /**
-         * @return int percentage of the current goal completed
+         * @brief sets the position control target to a specific location
+         * relative to the current value. For example, you might use this
+         * to drive by 500 ticks.
+         *
+         * @param target_distance
          */
-        int getPercentCompleted();
+        void setRelativeTarget(int target_distance);
+
+        /**
+         * @brief enables the PID controller to regulate the motor position.
+         * The controller is deactivated as soon as any regular motor function
+         * is called.
+         *
+         */
+        void enablePositionControl();
+
+        // returns the current counter counter (equivalent to using the BackEMF class)
+        int getPosition() const;
+
+        /**
+         * @return int ticks the motor is away from the target
+         */
+        int getDistanceFromTarget() const;
     };
+
 };

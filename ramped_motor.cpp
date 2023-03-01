@@ -11,9 +11,10 @@
  */
 
 #include <cmath>
-#include <kipr/util.hpp>
+#include <kipr/time/time.h>
 
 #include "ramped_motor.hpp"
+#include "spiaccess.hpp"
 
 using namespace kp;
 
@@ -70,15 +71,31 @@ void RampedMotor::controllerThreadFn()
             {
                 scaledSpeed = std::min((int)speed, speed * distance_traveled / accel_end + min_speed);
             }
-            Motor::moveToPosition(scaledSpeed, goal_pos);
+            Motor::moveToPosition(scaledSpeed, goal_pos);            
         }
 
         msleep(50);
     }
 }
 
+void RampedMotor::clearPositionCounter()
+{
+    //auto lock = aquireSPIAccess();
+    Motor::clearPositionCounter();
+}
+void RampedMotor::setPidGains(short p, short i, short d, short pd, short id, short dd)
+{
+    //auto lock = aquireSPIAccess();
+    Motor::setPidGains(p, i, d, pd, id, dd);
+}
+void RampedMotor::pidGains(short &p, short &i, short &d, short &pd, short &id, short &dd)
+{
+    //auto lock = aquireSPIAccess();
+    Motor::setPidGains(p, i, d, pd, id, dd);
+}
 void RampedMotor::moveAtVelocity(short velocity)
 {
+    //auto lock = aquireSPIAccess();
     Motor::moveAtVelocity(velocity);
 }
 void RampedMotor::moveToPosition(short _speed, int goalPos)
@@ -99,6 +116,7 @@ void RampedMotor::moveRelativePosition(short speed, int deltaPos)
 void RampedMotor::freeze()
 {
     pos_ctrl_active = false;
+    //auto lock = aquireSPIAccess();
     Motor::freeze();
 }
 bool RampedMotor::isMotorDone() const
@@ -112,31 +130,37 @@ void RampedMotor::blockMotorDone() const
 void RampedMotor::forward()
 {
     pos_ctrl_active = false;
+    //auto lock = aquireSPIAccess();
     Motor::forward();
 }
 void RampedMotor::backward()
 {
     pos_ctrl_active = false;
+    //auto lock = aquireSPIAccess();
     Motor::backward();
 }
 void RampedMotor::motor(int percent)
 {
     pos_ctrl_active = false;
+    //auto lock = aquireSPIAccess();
     Motor::motor(percent);
 }
 void RampedMotor::baasbennaguui(int percent)
 {
     pos_ctrl_active = false;
+    //auto lock = aquireSPIAccess();
     Motor::baasbennaguui(percent);
 }
 void RampedMotor::motorPower(int percent)
 {
     pos_ctrl_active = false;
+    //auto lock = aquireSPIAccess();
     Motor::motorPower(percent);
 }
 void RampedMotor::off()
 {
     pos_ctrl_active = false;
+    //auto lock = aquireSPIAccess();
     Motor::off();
 }
 
@@ -147,6 +171,7 @@ void RampedMotor::setAccuracy(int delta)
 
 int RampedMotor::getPosition()
 {
+    //auto lock = aquireSPIAccess();
     return position_provider.value();
 }
 

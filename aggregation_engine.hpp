@@ -14,15 +14,19 @@
 
 #include <vector>
 #include <memory>
-#include "ramped_motor.hpp"
+#include <el/retcode.hpp>
+#include "pid_motor.hpp"
 
 namespace kp
 {
     class AggregationEngine
     {
     protected:
-        using motorlist_t = std::vector<std::shared_ptr<RampedMotor>>;
+        using motorlist_t = std::vector<std::shared_ptr<PIDMotor>>;
         motorlist_t motors;
+
+        // multiplier that will be applied to every motor individually before setting it's position
+        std::vector<double> movement_modifiers;
     
     public:
         AggregationEngine() = default;
@@ -39,14 +43,22 @@ namespace kp
          * 
          * @param motor shared motor to add
          */
-        void addMotor(std::shared_ptr<RampedMotor> motor);
+        void addMotor(std::shared_ptr<PIDMotor> motor);
+
+        /**
+         * @brief Set a distance multiplier for every motor individually that can be used to invert
+         * the motor or counteract accuracy differences.
+         * 
+         * @param modifiers 
+         */
+        el::retcode setMovementModifiers(const std::vector<double> &modifiers);
 
         /**
          * @brief moves all motors by a relative distance 
          * 
-         * @param speed average speed to move at
+         * @param speed average speed to move at (ticks per second)
          * @param delta_pos distance to travel
          */
-        void moveRelativePosition(int short speed, int delta_pos);         
+        el::retcode moveRelativePosition(int short speed, int delta_pos);
     };
 };
