@@ -14,6 +14,7 @@
 
 #include <vector>
 #include <memory>
+#include <mutex>
 #include <el/retcode.hpp>
 #include "pid_motor.hpp"
 
@@ -25,9 +26,30 @@ namespace kp
         using motorlist_t = std::vector<std::shared_ptr<PIDMotor>>;
         motorlist_t motors;
 
+        // lock that makes sure motors don't get added or parameters are not modified while a sequence
+        // is running
+        std::mutex control_lock;
+
+        // flag telling the controller thread to process a sequence
+        bool sequence_running{false};
         // multiplier that will be applied to every motor individually before setting it's position
         std::vector<double> movement_modifiers;
-    
+        // positions of all the motors at the beginning of a tracking sequence
+        std::vector<int> starting_positions;
+        // individual delta values from start to target for each motor in the active sequence with movement modifiers applied
+        std::vector<int> position_deltas;
+        // number of periods in the active sequence
+        int sequence_periods = 0;
+        // number of periods already completed in the current sequence
+        int completed_periods = 0;
+
+        /**
+         * @brief function that will run the positioning in the background
+         */
+        void controllerThreadFn();
+        std::thread controller_thread;
+        std::atomic_bool threxit{false};
+
     public:
         AggregationEngine() = default;
         /**
@@ -39,11 +61,22 @@ namespace kp
         AggregationEngine(motorlist_t && m);
 
         /**
+         * @brief Destroy the Aggregation Engine instance and stop controller thread
+         */
+        ~AggregationEngine();
+
+        /**
          * @brief adds a new motor to the aggregation list
          * 
          * @param motor shared motor to add
          */
         void addMotor(std::shared_ptr<PIDMotor> motor);
+
+        /**
+         * @brief stops the current movement sequence pauses the controller thread
+         * and resets all internal values to the defaults.
+         */
+        void abortSequence();
 
         /**
          * @brief Set a distance multiplier for every motor individually that can be used to invert
@@ -60,5 +93,17 @@ namespace kp
          * @param delta_pos distance to travel
          */
         el::retcode moveRelativePosition(int short speed, int delta_pos);
+
+        /**
+         * @brief blocks until the current sequence is done processing (this does not take into
+         * account whether or not the positionables have actually reached the instructed goal)
+         * or the timeout is reached
+         * 
+         * @param timeout_ms timeout in ms (0 means no timeout)
+         * @retval ok - sequence completed
+         * @retval timeout - timeout reached before sequence completed
+         * @retval nak - no sequence active
+         */
+        el::retcode awaitSequenceComplete(int timeout_ms = 0);
     };
 };
