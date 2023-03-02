@@ -131,6 +131,11 @@ el::retcode AggregationEngine::moveRelativePosition(int short speed, int delta_p
     return el::retcode::ok;
 }
 
+bool AggregationEngine::sequenceRunning()
+{
+    return sequence_running;
+}
+
 el::retcode AggregationEngine::awaitSequenceComplete(int timeout_ms)
 {
     if (!sequence_running) return el::retcode::nak;

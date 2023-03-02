@@ -36,7 +36,7 @@ PIDMotor::~PIDMotor()
         controller_thread.join();
 }
 
-int c = 0;
+//int c = 0;
 
 void PIDMotor::controllerThreadFn()
 {
@@ -51,14 +51,14 @@ void PIDMotor::controllerThreadFn()
         double output = pid_provider.update(LOOP_DELAY, position);
         Motor::moveAtVelocity(output);
         {
-            if (c++ > 100)
+            /*if (c++ > 100)
             {
                 c = 0;
                 std::cout << std::this_thread::get_id() 
                     << "t=" << std::setw(6) << pid_provider.getSetpoint() 
                     << " o=" << std::setw(6) << output
                     << " p=" << std::setw(6) << position << std::endl;
-            }
+            }*/
         }
         msleep(LOOP_DELAY);
     }

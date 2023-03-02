@@ -95,6 +95,12 @@ namespace kp
         el::retcode moveRelativePosition(int short speed, int delta_pos);
 
         /**
+         * @retval true - sequence currently running
+         * @retval false - currently no sequence running, last sequence has been completed
+         */
+        bool sequenceRunning();
+
+        /**
          * @brief blocks until the current sequence is done processing (this does not take into
          * account whether or not the positionables have actually reached the instructed goal)
          * or the timeout is reached
