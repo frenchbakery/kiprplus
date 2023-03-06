@@ -71,7 +71,7 @@ void AggregationEngine::controllerThreadFn()
     }
 }
 
-void AggregationEngine::addMotor(std::shared_ptr<PIDMotor> motor)
+void AggregationEngine::addMotor(std::shared_ptr<Positionable> motor)
 {
     abortSequence();
     std::lock_guard lock(control_lock);

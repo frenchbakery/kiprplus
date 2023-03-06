@@ -15,15 +15,17 @@
 #include <vector>
 #include <memory>
 #include <mutex>
+#include <thread>
+#include <atomic>
 #include <el/retcode.hpp>
-#include "pid_motor.hpp"
+#include "positionable.hpp"
 
 namespace kp
 {
     class AggregationEngine
     {
     protected:
-        using motorlist_t = std::vector<std::shared_ptr<PIDMotor>>;
+        using motorlist_t = std::vector<std::shared_ptr<Positionable>>;
         motorlist_t motors;
 
         // lock that makes sure motors don't get added or parameters are not modified while a sequence
@@ -70,7 +72,7 @@ namespace kp
          * 
          * @param motor shared motor to add
          */
-        void addMotor(std::shared_ptr<PIDMotor> motor);
+        void addMotor(std::shared_ptr<Positionable> motor);
 
         /**
          * @brief stops the current movement sequence pauses the controller thread

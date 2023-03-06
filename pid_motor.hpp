@@ -15,11 +15,12 @@
 #include <thread>
 #include <kipr/motor/motor.hpp>
 #include "sync_pid.hpp"
+#include "positionable.hpp"
 
 namespace kp
 {
 
-    class PIDMotor : private kipr::motor::Motor
+    class PIDMotor : private kipr::motor::Motor, public Positionable
     {
     protected:
         kipr::motor::BackEMF position_provider;
@@ -74,14 +75,14 @@ namespace kp
          *
          * @param delta allowed ticks delta from position setpoint
          */
-        void setAccuracy(int delta);
+        void setAccuracy(int delta) override;
 
         /**
          * @brief sets the position control target to a specific location
          *
          * @param target_pos target position in motor ticks
          */
-        void setAbsoluteTarget(int target_pos);
+        el::retcode setAbsoluteTarget(int target_pos) override;
 
         /**
          * @brief sets the position control target to a specific location
@@ -90,7 +91,7 @@ namespace kp
          *
          * @param target_distance
          */
-        void setRelativeTarget(int target_distance);
+        el::retcode setRelativeTarget(int target_distance) override;
 
         /**
          * @brief enables the PID controller to regulate the motor position.
@@ -98,15 +99,32 @@ namespace kp
          * is called.
          *
          */
-        void enablePositionControl();
+        el::retcode enablePositionControl() override;
+
+        /**
+         * @brief disables position control. This does not clear the current target
+         * but rather just stops position control for the moment. It can resumed
+         * using enablePositionControl()
+         * 
+         * @return el::retcode 
+         */
+        el::retcode disablePositionControl() override;
 
         // returns the current counter counter (equivalent to using the BackEMF class)
-        int getPosition() const;
+        int getPosition() const override;
+
+        int getTarget() const override;
 
         /**
          * @return int ticks the motor is away from the target
          */
-        int getDistanceFromTarget() const;
+        int getDistanceFromTarget() const override;
+
+        /**
+         * @retval true distance from target is less than specified accuracy
+         * @retval false distance from target is greater than specified accuracy
+         */
+        bool targetReached() const override;
     };
 
 };

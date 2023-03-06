@@ -142,19 +142,33 @@ void PIDMotor::setAccuracy(int delta)
     accuracy = delta;
 }
 
-void PIDMotor::setAbsoluteTarget(int target_pos)
+el::retcode PIDMotor::setAbsoluteTarget(int target_pos)
 {
     pid_provider.setSetpoint(target_pos);
+    return el::retcode::ok;
 }
 
-void PIDMotor::setRelativeTarget(int target_distance)
+el::retcode PIDMotor::setRelativeTarget(int target_distance)
 {
     pid_provider.setSetpoint(pid_provider.getSetpoint() + target_distance);
+    return el::retcode::ok;
 }
 
-void PIDMotor::enablePositionControl()
+el::retcode PIDMotor::enablePositionControl()
 {
     pos_ctrl_active = true;
+    return el::retcode::ok;
+}
+
+el::retcode PIDMotor::disablePositionControl()
+{
+    pos_ctrl_active = false;
+    return el::retcode::ok;
+}
+
+int PIDMotor::getTarget() const
+{
+    return pid_provider.getSetpoint();
 }
 
 int PIDMotor::getPosition() const
@@ -165,4 +179,9 @@ int PIDMotor::getPosition() const
 int PIDMotor::getDistanceFromTarget() const
 {
     return pid_provider.getSetpoint() - getPosition();
+}
+
+bool PIDMotor::targetReached() const
+{
+    return getDistanceFromTarget() < accuracy;
 }
