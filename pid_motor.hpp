@@ -33,6 +33,11 @@ namespace kp
         // exit flag for thread
         std::atomic_bool threxit{false};
 
+        // target reached event handler
+        Positionable::handler_fn_t eh_target_reached = nullptr;
+        // flag to specify that the handler should be removed after the first call
+        bool callback_only_once = false;
+
         /**
          * @brief function that will run the positioning in the background
          *
@@ -125,6 +130,15 @@ namespace kp
          * @retval false distance from target is greater than specified accuracy
          */
         bool targetReached() const override;
+
+        /**
+         * @brief registers an event handler function that is called
+         * when a target is reached. Only one handler can be registered,
+         * a subsequent registration will overwrite the previous one.
+         * 
+         * @param handler callback function taking a positionable reference.
+         */
+        void onTargetReached(Positionable::handler_fn_t handler, bool once = false);
     };
 
 };

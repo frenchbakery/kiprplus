@@ -50,16 +50,17 @@ void PIDMotor::controllerThreadFn()
         int position = getPosition();
         double output = pid_provider.update(LOOP_DELAY, position);
         Motor::moveAtVelocity(output);
+
+        // call event handler for target reached
+        if (eh_target_reached && targetReached())
         {
-            /*if (c++ > 100)
-            {
-                c = 0;
-                std::cout << std::this_thread::get_id() 
-                    << "t=" << std::setw(6) << pid_provider.getSetpoint() 
-                    << " o=" << std::setw(6) << output
-                    << " p=" << std::setw(6) << position << std::endl;
-            }*/
+            eh_target_reached(*this);
+
+            if (callback_only_once)
+                eh_target_reached = nullptr;
         }
+        
+
         msleep(LOOP_DELAY);
     }
 }
@@ -184,4 +185,10 @@ int PIDMotor::getDistanceFromTarget() const
 bool PIDMotor::targetReached() const
 {
     return getDistanceFromTarget() < accuracy;
+}
+
+void PIDMotor::onTargetReached(Positionable::handler_fn_t handler, bool once)
+{
+    eh_target_reached = handler;
+    callback_only_once = once;
 }
