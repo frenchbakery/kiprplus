@@ -63,6 +63,7 @@ void AggregationEngine::controllerThreadFn()
             // move all motors forward by one step
             for (int m = 0; m < motors.size(); m++)
             {
+                printf("Motor %d is going to %d\n", m, (int)(starting_positions[m] + ((position_deltas[m] * completed_periods) / sequence_periods)));
                 motors[m]->setAbsoluteTarget(starting_positions[m] + ((position_deltas[m] * completed_periods) / sequence_periods));
             }
 

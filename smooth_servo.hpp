@@ -16,6 +16,7 @@
 
 namespace kp
 {
+    // TODO: make a kp::Positionable
     class SmoothServo : kipr::servo::Servo
     {
         protected:
