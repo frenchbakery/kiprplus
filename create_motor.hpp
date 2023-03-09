@@ -61,6 +61,17 @@ namespace kp
 
         ~CreateMotor();
 
+        /**
+         * @brief sets the velocity of the motor
+         * 
+         * @param v velocity in mm/s from -500 to 500
+         * 
+         * @retval ok - was set
+         * @retval err - invalid velocity
+         */
+        el::retcode moveAtVelocity(int v);
+
+
         void clearPositionCounter();
 
         void setAccuracy(int md) override;

@@ -125,6 +125,16 @@ CreateMotor::~CreateMotor()
         controller_thread.join();
 }
 
+el::retcode CreateMotor::moveAtVelocity(int v)
+{
+    if (v < -500 || v > 500)
+        return el::retcode::err;
+    disablePositionControl();
+    create_speed[motor_port] = v;
+    create_drive_direct(create_speed[0], create_speed[1]);
+    return el::retcode::ok;
+}
+
 void CreateMotor::clearPositionCounter()
 {
     updatePositions();
