@@ -23,6 +23,8 @@ namespace kp
     {
     protected:
         static bool create_connected_flag;
+
+        static uint64_t last_position_update;
         
         static SyncPID pid_provider[2];
         static int create_speed[2];

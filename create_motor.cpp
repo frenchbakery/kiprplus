@@ -19,10 +19,12 @@ using namespace kp;
 
 bool CreateMotor::create_connected_flag = false;
 
+uint64_t CreateMotor::last_position_update = 0;
+
 SyncPID CreateMotor::pid_provider[2] = 
 {
-    SyncPID(3, 0, 0, 0, -500, 500),
-    SyncPID(3, 0, 0, 0, -500, 500)
+    SyncPID(2.5, 0, 1, 0, -500, 500),
+    SyncPID(2.5, 0, 1, 0, -500, 500)
 };
 int CreateMotor::create_speed[2] = {0, 0};
 int CreateMotor::position_offsets[2] = {0, 0};
@@ -57,17 +59,19 @@ void CreateMotor::globalCreateDisconnect()
     create_connected_flag = false;
 }
 
+// the create should never be communicated with from any thread other than this one
 void CreateMotor::controllerThreadFn()
 {
     while (thread_consumers)
     {
+        updatePositions();
+        last_position_update = systime();
         int nr_motors = 2;
         int changed = false;
         for (int i = 0; i < nr_motors; i++)
         {
             if (!pos_ctrl_active[i]) continue;
             changed = true;
-            updatePositions();
             double output = pid_provider[i].update(LOOP_DELAY, current_position[i]);
             create_speed[i] = output;
 
@@ -96,7 +100,7 @@ void CreateMotor::updatePositions()
 {
     short l, r;
     _create_get_raw_encoders(&l, &r);
-    std::cout << "Readpos l=" << l << ", r=" << r << std::endl;
+    std::cout << std::this_thread::get_id() << " Readpos l=" << l << ", r=" << r << std::endl;
     current_position[0] = l - position_offsets[0];
     current_position[1] = r - position_offsets[1];
 }
@@ -137,7 +141,10 @@ el::retcode CreateMotor::moveAtVelocity(int v)
 
 void CreateMotor::clearPositionCounter()
 {
-    updatePositions();
+    // wait for position to be updated. This will never block during operation as the
+    // position will be updated every LOOP_DELAY ms but it will make sure the thread has run
+    // at least once before the counter is cleared.
+    while (last_position_update + LOOP_DELAY * 2 < systime()) msleep(1);
     position_offsets[motor_port] = current_position[motor_port];
 }
 
@@ -177,7 +184,6 @@ int CreateMotor::getTarget() const
 
 int CreateMotor::getPosition() const
 {
-    updatePositions();
     return current_position[motor_port];
 }
 
