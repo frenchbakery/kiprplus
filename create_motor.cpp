@@ -23,8 +23,8 @@ uint64_t CreateMotor::last_position_update = 0;
 
 SyncPID CreateMotor::pid_provider[2] = 
 {
-    SyncPID(2.5, 0, 1, 0, -500, 500),
-    SyncPID(2.5, 0, 1, 0, -500, 500)
+    SyncPID(1, 0, 0, 0, -500, 500),
+    SyncPID(1, 0, 0, 0, -500, 500)
 };
 int CreateMotor::create_speed[2] = {0, 0};
 int CreateMotor::position_offsets[2] = {0, 0};
@@ -44,7 +44,7 @@ std::thread CreateMotor::controller_thread;
 
 
 
-#define LOOP_DELAY 10 // ms
+#define LOOP_DELAY 2 // ms
 
 
 void CreateMotor::globalCreateConnect()
@@ -75,10 +75,10 @@ void CreateMotor::controllerThreadFn()
             double output = pid_provider[i].update(LOOP_DELAY, current_position[i]);
             create_speed[i] = output;
 
-            std::cout << "target=" << std::setw(6) << pid_provider[i].getSetpoint() <<
+            /*std::cout << "target=" << std::setw(6) << pid_provider[i].getSetpoint() <<
                          "pos="    << std::setw(6) << current_position[i] <<
                          "offset=" << std::setw(6) << position_offsets[i] <<
-                         "output=" <<  std::setw(6) << output << std::endl;
+                         "output=" <<  std::setw(6) << output << std::endl;*/
 
             if (eh_target_reached[i] && 
             pid_provider[i].getSetpoint() - current_position[i] < accuracy[i])
@@ -100,7 +100,7 @@ void CreateMotor::updatePositions()
 {
     short l, r;
     _create_get_raw_encoders(&l, &r);
-    std::cout << std::this_thread::get_id() << " Readpos l=" << l << ", r=" << r << std::endl;
+    //std::cout << std::this_thread::get_id() << " Readpos l=" << l << ", r=" << r << std::endl;
     current_position[0] = l - position_offsets[0];
     current_position[1] = r - position_offsets[1];
 }
