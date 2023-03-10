@@ -63,7 +63,7 @@ void AggregationEngine::controllerThreadFn()
             // move all motors forward by one step
             for (int m = 0; m < motors.size(); m++)
             {
-                printf("Motor %d is going to %d\n", m, (int)(starting_positions[m] + ((position_deltas[m] * completed_periods) / sequence_periods)));
+                //printf("Motor %d is going to %d\n", m, (int)(starting_positions[m] + ((position_deltas[m] * completed_periods) / sequence_periods)));
                 motors[m]->setAbsoluteTarget(starting_positions[m] + ((position_deltas[m] * completed_periods) / sequence_periods));
             }
 
@@ -123,7 +123,7 @@ el::retcode AggregationEngine::moveRelativePosition(int short speed, int delta_p
         position_deltas.push_back(delta_pos * movement_modifiers[m]);
     }
 
-    const int ticks_per_period = (UPDATE_PERIOD * speed) / 1000;
+    const double ticks_per_period = ((float)UPDATE_PERIOD * (double)speed) / 1000.0f;
     sequence_periods = std::abs(delta_pos) / ticks_per_period;
 
     // start the thread
