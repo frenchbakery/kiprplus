@@ -139,6 +139,7 @@ CreateMotor::~CreateMotor()
 
 el::retcode CreateMotor::moveAtVelocity(int v)
 {
+    std::lock_guard lock(create_access_mutex);
     if (v < -500 || v > 500)
         return el::retcode::err;
     disablePositionControl();
