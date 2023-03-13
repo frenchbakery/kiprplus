@@ -21,6 +21,8 @@ namespace kp
 {
     class CreateMotor : public Positionable
     {
+    public:
+        static std::mutex create_access_mutex;
     protected:
         static bool create_connected_flag;
 

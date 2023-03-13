@@ -17,6 +17,8 @@
 
 using namespace kp;
 
+std::mutex CreateMotor::create_access_mutex;
+
 bool CreateMotor::create_connected_flag = false;
 
 uint64_t CreateMotor::last_position_update = 0;
@@ -49,12 +51,14 @@ std::thread CreateMotor::controller_thread;
 
 void CreateMotor::globalCreateConnect()
 {
+    std::lock_guard lock(create_access_mutex);
     create_connect(); // always returns 0
     create_connected_flag = true;
 }
 
 void CreateMotor::globalCreateDisconnect()
 {
+    std::lock_guard lock(create_access_mutex);
     create_disconnect();
     create_connected_flag = false;
 }
@@ -90,7 +94,10 @@ void CreateMotor::controllerThreadFn()
             }
         }
         if (changed)
+        {
+            std::lock_guard lock(create_access_mutex);
             create_drive_direct(create_speed[0], create_speed[1]);
+        }
         
         msleep(LOOP_DELAY);
     }
@@ -98,6 +105,7 @@ void CreateMotor::controllerThreadFn()
 
 void CreateMotor::updatePositions()
 {
+    std::lock_guard lock(create_access_mutex);
     short l, r;
     _create_get_raw_encoders(&l, &r);
     //std::cout << std::this_thread::get_id() << " Readpos l=" << l << ", r=" << r << std::endl;
