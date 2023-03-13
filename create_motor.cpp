@@ -23,8 +23,8 @@ uint64_t CreateMotor::last_position_update = 0;
 
 SyncPID CreateMotor::pid_provider[2] = 
 {
-    SyncPID(1, 0, 0, 0, -500, 500),
-    SyncPID(1, 0, 0, 0, -500, 500)
+    SyncPID(1.7, 0, 0, 0, -500, 500),
+    SyncPID(1.7, 0, 0, 0, -500, 500)
 };
 int CreateMotor::create_speed[2] = {0, 0};
 int CreateMotor::position_offsets[2] = {0, 0};
