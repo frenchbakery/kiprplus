@@ -65,15 +65,11 @@ namespace kp
     {
         double error = setpoint - measurement;
 
-        //printf("p=%lf, i=%lf, d=%lf, period=%lf, meas=%lf, integ=%lf, differ=%lf\n", k_p, k_i, k_d, period, measurement, integrator, differentiator);
-
         // Proportional
         double proportional = k_p * error;
 
         // Integral
         integrator = integrator + 0.5 * k_i * period * (error + previous_error);
-
-        //printf("integrator=%lf", integrator);
 
         // integrator limits
         double min_integ, max_integ;
@@ -97,8 +93,7 @@ namespace kp
 
         // Combine output
         output = proportional + integrator + differentiator;
-        //printf("p=%lf, i=%lf, d=%lf, out=%lf", proportional, integrator, differentiator, output);
-        
+
         output = std::min(output, max_output);
         output = std::max(output, min_output);
 
@@ -111,8 +106,6 @@ namespace kp
         // store values for next update
         previous_error = error;
         previous_measurement = measurement;
-
-        //printf("out=%lf", output);
 
         return output;
     }
