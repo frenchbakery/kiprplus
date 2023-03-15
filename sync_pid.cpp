@@ -58,9 +58,7 @@ namespace kp
         previous_error = 0;
         previous_measurement = 0;
         setpoint = 0;
-        setpoint_offset = 0;
-        positive_deadband = 0;
-        negative_deadband = 0;
+        //setpoint_offset = 0;
     }
 
     double SyncPID::update(double period, double measurement)

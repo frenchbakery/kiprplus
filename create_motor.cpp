@@ -150,11 +150,12 @@ el::retcode CreateMotor::moveAtVelocity(int v)
 
 void CreateMotor::clearPositionCounter()
 {
-    // wait for position to be updated. This will never block during operation as the
-    // position will be updated every LOOP_DELAY ms but it will make sure the thread has run
-    // at least once before the counter is cleared.
-    while (last_position_update + LOOP_DELAY * 2 < systime()) msleep(1);
-    position_offsets[motor_port] = current_position[motor_port];
+    // read the raw position from the encoder and save it as the new offset position.
+    // This value is then considered zero.
+    std::lock_guard lock(create_access_mutex);
+    short l, r;
+    _create_get_raw_encoders(&l, &r);
+    position_offsets[motor_port] = motor_port ? r : l; // motor_port==0 -> l, motor_port==1 -> r
 }
 
 void CreateMotor::setAccuracy(int delta)
@@ -176,6 +177,7 @@ el::retcode CreateMotor::setRelativeTarget(int target_distance)
 
 el::retcode CreateMotor::enablePositionControl()
 {
+    pid_provider[motor_port].reset();
     pos_ctrl_active[motor_port] = true;
     return el::retcode::ok;
 }
@@ -183,6 +185,7 @@ el::retcode CreateMotor::enablePositionControl()
 el::retcode CreateMotor::disablePositionControl()
 {
     pos_ctrl_active[motor_port] = false;
+    pid_provider[motor_port].reset();
     return el::retcode::ok;
 }
 

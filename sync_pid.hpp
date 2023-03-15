@@ -32,7 +32,7 @@ namespace kp
 
         // setpoint configuration
         double setpoint;
-        double setpoint_offset;
+        //double setpoint_offset;
 
         // output limits and output
         double min_output;
