@@ -46,7 +46,7 @@ namespace kp
         std::thread controller_thread;
 
     public:
-        PIDMotor(int port);
+        PIDMotor(int port, int max_speed = 1500);
 
         ~PIDMotor();
 

@@ -21,10 +21,10 @@ using namespace kp;
 #define LOOP_DELAY 1 // ms
 
 
-PIDMotor::PIDMotor(int port)
+PIDMotor::PIDMotor(int port, int max_speed)
     : Motor(port),
     position_provider(port),
-    pid_provider(7, 0, 0, 0, -1500, 1500)
+    pid_provider(20, 0, 0, 0, -max_speed, max_speed)
 {
     controller_thread = std::thread(&PIDMotor::controllerThreadFn, this);
 }
