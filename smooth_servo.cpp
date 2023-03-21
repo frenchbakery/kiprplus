@@ -35,6 +35,10 @@ void SmoothServo::controllerThreadFn()
                 Servo::setPosition((int)curr_pos);
             }
         }
+        else
+        {
+            Servo::setPosition((int)set_pos);
+        }
         msleep(loop_time);
     }
     std::cout << "threat exit\n";
@@ -95,6 +99,11 @@ int SmoothServo::getSpeed()
 
 void SmoothServo::setPosition(int position)
 {
+    if (!(0 <= position && position <= 2048))
+    {
+        std::cout << "SmoothServo: INVALID VALUE FOR POSITION: " << position << std::endl;
+        return;
+    }
     start_pos = curr_pos;
     set_pos = position;
 }
