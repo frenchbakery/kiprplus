@@ -35,7 +35,7 @@ namespace kp
             void controllerThreadFn();
 
         public:
-            SmoothServo(int port, int initial_pos = 1024);
+            SmoothServo(int port, int initial_pos = -1);
             ~SmoothServo();
 
             void disable();
@@ -48,6 +48,7 @@ namespace kp
 
             void setPosition(int position);
             void setPosition(int position, int speed);
+            int getServoPosition();
             int getSetPosition();
             int position();
 

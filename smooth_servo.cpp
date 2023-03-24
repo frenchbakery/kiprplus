@@ -48,6 +48,10 @@ void SmoothServo::controllerThreadFn()
 SmoothServo::SmoothServo(int port, int initial_pos)
     : Servo(port)
 {
+    if (initial_pos == -1)
+    {
+        initial_pos = Servo::position();
+    }
     start_pos = initial_pos;
     curr_pos = initial_pos;
     set_pos = initial_pos;
@@ -136,4 +140,9 @@ double SmoothServo::getPercentCompleted()
 void SmoothServo::waitUntilComleted()
 {
     while (!(getPercentCompleted() > 99)) { msleep(10); };
+}
+
+int SmoothServo::getServoPosition()
+{
+    return Servo::position();
 }
