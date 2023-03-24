@@ -31,6 +31,7 @@ namespace kp
         static SyncPID pid_provider[2];
         static int create_speed[2];
         static int position_offsets[2];
+        static int current_raw_position[2];
         static int current_position[2];
         static bool pos_ctrl_active[2];
         static int accuracy[2];
@@ -56,6 +57,9 @@ namespace kp
 
         // reads encoder values and stores them in internal array
         static void updatePositions();
+
+        static char file_path[64];
+        static bool is_initialized;
 
     public:
         static void globalCreateConnect();
