@@ -20,6 +20,13 @@ using namespace kp;
 
 #define UPDATE_PERIOD 2 // ms
 
+
+static double map(double x, double in_min, double in_max, double out_min, double out_max)
+{
+    // magic
+    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
 AggregationEngine::AggregationEngine(AggregationEngine::motorlist_t && m)
 : motors(m)
 {
@@ -54,11 +61,11 @@ void AggregationEngine::controllerThreadFn()
             // between steps must be higher -> higher multiplier
             if (part_complete < .1) // first ten percent
             {
-                delay_multiplier = 2;
+                delay_multiplier = map(part_complete, 0, .1, 2, 1);
             }
             else if (part_complete > .9)
             {
-                delay_multiplier = 2;
+                delay_multiplier = map(part_complete, .9, 1, 1, 2);
             }
             else
                 delay_multiplier = 1;
