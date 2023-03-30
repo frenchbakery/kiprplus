@@ -40,12 +40,28 @@ AggregationEngine::~AggregationEngine()
 
 void AggregationEngine::controllerThreadFn()
 {
+    double delay_multiplier = 1;
     while (!threxit)
     {
-        msleep(UPDATE_PERIOD);
+        msleep(UPDATE_PERIOD * delay_multiplier);
         {
             std::lock_guard lock(control_lock);
             if (!sequence_running) continue;
+
+            double part_complete = (double)completed_periods / (double)sequence_periods;
+            // calculate the accelleration and deceleration multipliers
+            // at the beginning and end movement should be slower, so the delay
+            // between steps must be higher -> higher multiplier
+            if (part_complete < .1) // first ten percent
+            {
+                delay_multiplier = 2;
+            }
+            else if (part_complete > .9)
+            {
+                delay_multiplier = 2;
+            }
+            else
+                delay_multiplier = 1;
 
             // pause thread when sequence is done
             if (completed_periods >= sequence_periods)
